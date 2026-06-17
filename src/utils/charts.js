@@ -1050,11 +1050,29 @@ export function useBarChart(param1) {
                     color: cssColor87
                 },
                 itemStyle: {
-                    color: '#35C4FE',
+                    color: (params) => {
+                        if (param1 == "barChart2") {
+                            return '#35C4FE'; // Keep Win Rate blue
+                        }
+                        if (params.value >= 0) {
+                            return '#00CA73'; // green for positive
+                        } else {
+                            return '#FF6B6B'; // red for negative
+                        }
+                    }
                 },
                 emphasis: {
                     itemStyle: {
-                        color: '#01B4FF'
+                        color: (params) => {
+                            if (param1 == "barChart2") {
+                                return '#01B4FF'; // Keep Win Rate blue emphasis
+                            }
+                            if (params.value >= 0) {
+                                return '#00A350'; // darker green for emphasis
+                            } else {
+                                return '#CC5555'; // darker red for emphasis
+                            }
+                        }
                     }
                 },
             }],
@@ -1449,7 +1467,13 @@ export function useBarChartNegative(param1) {
             series: [{
                 type: 'bar',
                 itemStyle: {
-                    color: '#35C4FE',
+                    color: (params) => {
+                        if (params.value >= 0) {
+                            return '#00CA73'; // green for positive
+                        } else {
+                            return '#FF6B6B'; // red for negative
+                        }
+                    }
                 },
                 label: {
                     show: true,
