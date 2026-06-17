@@ -591,11 +591,23 @@ export function useLineBarChart(param) {
                     color: cssColor87
                 },
                 itemStyle: {
-                    color: '#35C4FE',
+                    color: (params) => {
+                        if (params.value >= 0) {
+                            return '#00CA73'; // green for positive
+                        } else {
+                            return '#FF6B6B'; // red for negative
+                        }
+                    }
                 },
                 emphasis: {
                     itemStyle: {
-                        color: '#01B4FF'
+                        color: (params) => {
+                            if (params.value >= 0) {
+                                return '#00A350'; // darker green for emphasis
+                            } else {
+                                return '#CC5555'; // darker red for emphasis
+                            }
+                        }
                     }
                 },
             }
