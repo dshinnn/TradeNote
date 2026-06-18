@@ -1,7 +1,7 @@
 name: tradenote
 services:
   tradenote:
-    image: eleventrading/tradenote
+    image: ghcr.io/dshinnn/tradenote-personal:latest
     container_name: tradenote_app
     ports:
       - 8080:8080
