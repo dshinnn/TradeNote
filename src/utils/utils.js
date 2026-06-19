@@ -1369,6 +1369,7 @@ export function useDecimalsArithmetic(param1, param2) {
     return ((param1.toFixed(6) * 100) + (param2.toFixed(6) * 100)) / 100
 }
 
+// This function takes a string in accounting format (e.g., "($1,234.56)") and returns a numeric value (-1234.56)
 export function parseAccountingNumber(param) {
     // 1. Check if the string contains a value wrapped in parentheses
   const isNegative = /\(([^)]+)\)/.test(param);
