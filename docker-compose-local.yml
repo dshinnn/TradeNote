@@ -11,9 +11,11 @@ services:
       - 8080:8080
     links:
       - mongo
+    # 👇 EXCLUDE DIST FROM WINDOWS FILE LOCKS
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/dist
     environment:
       MONGO_URI: mongodb://tradenote:tradenote@mongo:27017/tradenote?authSource=admin
       TRADENOTE_DATABASE: tradenote
