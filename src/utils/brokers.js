@@ -2,6 +2,7 @@
 //"T/D": "month/day/2022",
 
 import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier, futuresTopstepXFees } from "../stores/globals.js"
+import { parseAccountingNumber } from "./utils.js"
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -1043,64 +1044,35 @@ export async function useNinjaTrader(param) {
                     let temp = {}
                     temp.Account = element.Account
                     //console.log("element.TradeDate. " + element.TradeDate)
-                    let date = element.Time.split(" ")[0]
+                    temp.Date = element["Entry time"].split(" ")[0]
 
-                    temp["T/D"] = date
-                    temp["S/D"] = date
+                    temp["Trade number"] = element["Trade number"]
+                    temp["Entry time"] = element["Entry time"].split(" ")[1]
+                    temp["Exit time"] = element["Exit time"].split(" ")[1]
 
                     temp.Currency = "USD"
                     temp.Type = "future"
 
-                    let qtyNumber = Number(element.Quantity)
+                    let qtyNumber = Number(element.Qty)
                     temp.Qty = qtyNumber.toString()
 
-
-                    if (element.Action == "Buy" && element["E/X"] == "Entry") {
-                        temp.Side = "B"
-                    }
-                    if (element.Action == "Buy" && element["E/X"] == "Exit") {
-                        temp.Side = "BC"
-                    }
-                    if (element.Action == "Sell" && element["E/X"] == "Exit") {
-                        temp.Side = "S"
-                    }
-                    if (element.Action == "Sell" && element["E/X"] == "Entry") {
-                        temp.Side = "SS"
-                    }
+                    temp.pos = element["Market pos."]
 
                     temp.SymbolOriginal = element.Instrument
                     temp.Symbol = element.Instrument.split(" ")[0]
 
-                    let priceNumber = Number(element.Price)
-                    temp.Price = priceNumber.toString()
-
-                    temp["Exec Time"] = dayjs(element.Time).format("HH:mm:ss") // we do not use tz because at start you should precise that you're in NY timezone + in settings set the NY time format before export
+                    temp["Entry price"] = element["Entry price"]
+                    temp["Exit price"] = element["Exit price"]
+                    temp["Exec Time"] = dayjs.duration(dayjs(element["Exit time"]).diff(dayjs(element["Entry time"]))).format("HH:mm:ss") // we do not use tz because at start you should precise that you're in NY timezone + in settings set the NY time format before export
                     //console.log(" exect time "+temp["Exec Time"])
                     //temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
 
-                    let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    //console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
-                    if (contractSpecs.length == 0) {
-                        reject("Missing information for future symbol " + temp.Symbol)
-                    }
-                    let tick = contractSpecs[0].tick
-                    let value = contractSpecs[0].value
-
-                    let qtyNumberSide
-
-                    if (temp.Side == "B" || temp.Side == "BC") {
-                        qtyNumberSide = -qtyNumber
-                    } else {
-                        qtyNumberSide = qtyNumber
-                    }
-
-                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
-                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
-
-                    temp["Gross Proceeds"] = proceedsNumber.toString()
-
-                    let commNumber = Number(element.Commission.split("$")[1])
-                    temp.Comm = commNumber.toString()
+                    temp["Gross Proceeds"] = parseAccountingNumber(element.Profit)
+                    temp.Comm = parseAccountingNumber(element["Commission"])
+                    temp["MAE"] = parseAccountingNumber(element["MAE"])
+                    temp["MFE"] = parseAccountingNumber(element["MFE"])
+                    temp["ETD"] = parseAccountingNumber(element["ETD"])
+                    
 
                     temp.SEC = "0"
                     temp.TAF = "0"
@@ -1108,13 +1080,13 @@ export async function useNinjaTrader(param) {
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
-                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                    temp["Net Proceeds"] = parseAccountingNumber(element["Cum. net profit"])
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
                     temp.Note = ""
 
-                    //console.log("temp " + JSON.stringify(temp))
-                    tradesData.push(temp)
+                    console.log("temp " + JSON.stringify(temp))
+                    // tradesData.push(temp)
                 }
             });
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))

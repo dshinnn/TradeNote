@@ -1369,6 +1369,19 @@ export function useDecimalsArithmetic(param1, param2) {
     return ((param1.toFixed(6) * 100) + (param2.toFixed(6) * 100)) / 100
 }
 
+export function parseAccountingNumber(param) {
+    // 1. Check if the string contains a value wrapped in parentheses
+  const isNegative = /\(([^)]+)\)/.test(param);
+  
+    // 2. Remove parentheses, dollar signs, and commas to isolate the digits
+    const cleanStr = param.replace(/[()$,]/g, '');
+  
+    // 3. Convert to a float
+    const numericValue = parseFloat(cleanStr);
+  
+    // 4. Return as negative if it had parentheses, otherwise return positive
+    return isNegative ? -numericValue : numericValue;
+}
 
 /**************************************
 * CLOUD
