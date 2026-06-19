@@ -6,6 +6,7 @@
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
+    "dev": "CHOKIDAR_USEPOLLING=true vite build --watch & node index.mjs",
     "start": "node index.mjs",
     "build": "vite build",
     "preview": "vite preview"

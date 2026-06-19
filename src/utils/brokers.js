@@ -1085,8 +1085,8 @@ export async function useNinjaTrader(param) {
                     temp.Liq = ""
                     temp.Note = ""
 
-                    console.log("temp " + JSON.stringify(temp))
-                    // tradesData.push(temp)
+                    // console.log(temp)
+                    tradesData.push(temp)
                 }
             });
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))

@@ -1,0 +1,2 @@
+Got trades to be read in brokers.js
+Have to fix all number values to remove parenthesises

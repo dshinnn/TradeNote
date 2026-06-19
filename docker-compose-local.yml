@@ -6,11 +6,14 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
-    image: tradenote:latest
+    image: ghcr.io/dshinnn/tradenote-personal:dev
     ports:
       - 8080:8080
     links:
       - mongo
+    volumes:
+      - .:/app
+      - /app/node_modules
     environment:
       MONGO_URI: mongodb://tradenote:tradenote@mongo:27017/tradenote?authSource=admin
       TRADENOTE_DATABASE: tradenote
