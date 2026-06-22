@@ -1056,7 +1056,7 @@ export async function useNinjaTrader(param) {
                     let qtyNumber = Number(element.Qty)
                     temp.Qty = qtyNumber.toString()
 
-                    temp.pos = element["Market pos."]
+                    temp.Side = element["Market pos."]
 
                     temp.SymbolOriginal = element.Instrument
                     temp.Symbol = element.Instrument.split(" ")[0]

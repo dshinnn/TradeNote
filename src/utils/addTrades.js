@@ -26,6 +26,7 @@ import Papa from 'papaparse';
 let openPosition = false
 let tradeAccounts = []
 let tempExecutions = []
+let tempTrades = []
 let tradedSymbols = []
 let tradedStartDate = null
 let tradedEndDate = null
@@ -288,11 +289,19 @@ export async function useImportTrades(param1, param2, param3, param0) {
         * CREATE EXECUTIONS, TRADES
         ****************************/
         const create = async () => {
-            await createTempExecutions().catch((error) => {
-                if (param2 != "api") {
-                    alert("Error in upload file (" + error + ")")
-                }
-            })
+            if (selectedBroker.value == "ninjaTrader") {
+                await createTempTrades().catch((error) => {
+                    if (param2 != "api") {
+                        alert("Error in upload file (" + error + ")")
+                    }
+                })
+            } else {
+                await createTempExecutions().catch((error) => {
+                    if (param2 != "api") {
+                        alert("Error in upload file (" + error + ")")
+                    }
+                })
+            }
 
             await createExecutions()
 
@@ -374,6 +383,103 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
     })
 }
+async function createTempTrades() {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nCREATING TEMP Trades")
+        
+        const keys = Object.keys(tradesData);
+        var temp = [];
+
+        tempExecutions.length = 0 // reinitialize, for API
+        tradedSymbols.length = 0 // reinitialize, for API
+
+        for (const key of keys) {
+            try {
+                let temp2 = {};
+                temp2.account = tradesData[key].Account
+                temp2.broker = selectedBroker.value
+                if (!tradeAccounts.includes(tradesData[key].Account)) tradeAccounts.push(tradesData[key].Account)
+                /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
+                //frDate = usDate.tz("Europe/Paris")
+                console.log("date "+usDate+" and fr ")*/
+                console.log(tradesData[key].Date)
+                const dateArrayTD = tradesData[key].Date.split('/');
+                //console.log("dateArrayTD " + dateArrayTD)
+                const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
+                //console.log("formatedDateTD " + formatedDateTD)
+
+                temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
+                
+                // const dateArraySD = tradesData[key]['Exit time'].split('/');
+                // const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
+                // temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()
+
+                temp2.currency = tradesData[key].Currency;
+                temp2.type = tradesData[key].Type;
+                temp2.side = tradesData[key].Side;
+                temp2.symbol = tradesData[key].Symbol.replace(".", "_")
+                temp2.symbolOriginal = tradesData[key].SymbolOriginal
+                temp2.quantity = parseFloat(tradesData[key].Qty);
+                temp2["Entry price"] = parseFloat(tradesData[key]["Entry price"]);
+                temp2["Exit price"] = parseFloat(tradesData[key]["Exit price"]);
+                temp2.execTime = tradesData[key]['Exec Time'];
+
+                temp2.commission = parseFloat(tradesData[key].Comm);
+                temp2.sec = parseFloat(tradesData[key].SEC);
+                temp2.taf = parseFloat(tradesData[key].TAF);
+                temp2.nscc = parseFloat(tradesData[key].NSCC);
+                temp2.nasdaq = parseFloat(tradesData[key].Nasdaq);
+                temp2.ecnRemove = parseFloat(tradesData[key]['ECN Remove']);
+                temp2.ecnAdd = parseFloat(tradesData[key]['ECN Add']);
+                temp2.grossProceeds = parseFloat(tradesData[key]['Gross Proceeds']);
+                temp2.netProceeds = parseFloat(tradesData[key]['Net Proceeds']);
+                temp2.clrBroker = tradesData[key]['Clr Broker'];
+                temp2.liq = tradesData[key].Liq;
+                temp2.note = tradesData[key].Note;
+                temp2.trade = null;
+                
+                console.log("CreateTrades - temp2: ", temp2);
+                tempExecutions.push(temp2);
+                //console.log(" tempExecutions " + JSON.stringify(tempExecutions));
+
+
+                let index = tradedSymbols.findIndex(obj => obj.symbol === temp2.symbol)
+                if (index === -1) {
+                    let temp = {}
+                    temp.symbol = temp2.symbol
+                    temp.secType = temp2.type
+                    tradedSymbols.push(temp)
+                }
+
+                if (tradedStartDate == null) {
+                    //console.log("td type " + typeof + temp2.td)
+                    tradedStartDate = temp2.td
+                } else if (temp2.td < tradedStartDate) {
+                    tradedStartDate = temp2.td
+                }
+
+                if (tradedEndDate == null) {
+                    //console.log("td type " + typeof + temp2.td)
+                    tradedEndDate = temp2.execTime
+                } else if (temp2.execTime > tradedEndDate) {
+                    tradedEndDate = temp2.execTime
+                }
+                //console.log(" tradedSymbols " + JSON.stringify(tradedSymbols));
+
+                //console.log(" -> Trade start date " + tradedStartDate)
+                //console.log(" -> Trade end date " + tradedEndDate)
+                //console.log("temp " + JSON.stringify(temp2))
+
+            } catch (error) {
+                console.log("  --> ERROR " + error)
+                reject(error)
+            }
+        }
+        console.log(" -> Created temp executions");
+        console.log(" -> Created traded symbols");
+        resolve()
+    })
+}
 
 async function createTempExecutions() {
     return new Promise(async (resolve, reject) => {
@@ -400,16 +506,16 @@ async function createTempExecutions() {
                 /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
                 //frDate = usDate.tz("Europe/Paris")
                 console.log("date "+usDate+" and fr ")*/
-                const dateArrayTD = tradesData[key]['T/D'].split('/');
-                //console.log("dateArrayTD " + dateArrayTD)
-                const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
-                //console.log("formatedDateTD " + formatedDateTD)
+                // const dateArrayTD = tradesData[key]['T/D'].split('/');
+                // //console.log("dateArrayTD " + dateArrayTD)
+                // const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
+                // //console.log("formatedDateTD " + formatedDateTD)
 
-                temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
+                // temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
 
-                const dateArraySD = tradesData[key]['S/D'].split('/');
-                const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
-                temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()
+                // const dateArraySD = tradesData[key]['S/D'].split('/');
+                // const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
+                // temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()
 
                 temp2.currency = tradesData[key].Currency;
                 temp2.type = tradesData[key].Type;
