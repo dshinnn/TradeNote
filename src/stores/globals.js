@@ -3371,8 +3371,7 @@ export const selectedTimeFrame = typeof localStorage !== 'undefined' ? ref(local
 export const selectedRatio = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedRatio')) : ""
 export const selectedAccount = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedAccount')) : ""
 export const selectedAccounts = typeof localStorage !== 'undefined' ? localStorage.getItem('selectedAccounts') ? ref(localStorage.getItem('selectedAccounts').split(",")) : ref([]) : ""
-// export const selectedGrossNet = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedGrossNet')) : ""
-export const selectedGrossNet = "net"
+export const selectedGrossNet = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedGrossNet')) : ""
 export const selectedPlSatisfaction = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedPlSatisfaction')) : ""
 export const selectedBroker = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedBroker')) : ref()
 export const selectedDateRange = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedDateRange'))) : ""
